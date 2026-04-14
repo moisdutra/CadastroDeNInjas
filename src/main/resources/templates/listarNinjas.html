@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Tabela de Ninjas</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Nunito:wght@400;500;600&display=swap');
+
+        :root {
+            --bg-page: #0d1117;
+            --bg-card: #161b22;
+            --bg-table: #1a2030;
+            --bg-header: #1c2333;
+            --bg-row-hover: #212c40;
+            --bg-row-alt: #1e2535;
+            --accent-red: #e05252;
+            --accent-orange: #e07b2c;
+            --accent-gold: #c9922a;
+            --accent-glow: rgba(224, 82, 82, 0.25);
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-accent: rgba(224, 82, 82, 0.4);
+            --rank-genin: #4fa84f;
+            --rank-chunin: #4a90d9;
+            --rank-jonin: #9b59b6;
+            --rank-anbu: #e05252;
+            --rank-kage: #c9922a;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            background-image:
+                    radial-gradient(ellipse at 20% 10%, rgba(224, 82, 82, 0.06) 0%, transparent 50%),
+                    radial-gradient(ellipse at 80% 90%, rgba(74, 144, 217, 0.05) 0%, transparent 50%);
+            color: var(--text-primary);
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            padding: 2.5rem 2rem;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h1::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 2.2rem;
+            background: linear-gradient(to bottom, var(--accent-red), var(--accent-orange));
+            border-radius: 2px;
+        }
+
+        h1::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--border-accent), transparent);
+            margin-left: 1rem;
+        }
+
+        .table-wrapper {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-subtle);
+            overflow: hidden;
+            box-shadow:
+                    0 0 0 1px var(--border-subtle),
+                    0 20px 60px rgba(0, 0, 0, 0.5),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        table colgroup col:nth-child(1) { width: 90px; }
+        table colgroup col:nth-child(2) { width: 50px; }
+        table colgroup col:nth-child(3) { width: 140px; }
+        table colgroup col:nth-child(4) { width: 65px; }
+        table colgroup col:nth-child(5) { width: 175px; }
+        table colgroup col:nth-child(6) { width: 95px; }
+        table colgroup col:nth-child(7) { width: auto; }
+        table colgroup col:nth-child(8) { width: 240px; }
+
+        thead tr {
+            background: var(--bg-header);
+            border-bottom: 1px solid var(--border-accent);
+        }
+
+        thead th {
+            padding: 1rem 1.1rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            text-align: left;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        thead th:first-child {
+            text-align: center;
+            border-radius: var(--radius-md) 0 0 0;
+        }
+
+        thead th:last-child {
+            border-radius: 0 var(--radius-md) 0 0;
+        }
+
+        thead th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1.1rem;
+            right: 1.1rem;
+            height: 1px;
+            background: var(--border-accent);
+            opacity: 0.5;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background 0.15s ease;
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--bg-row-alt);
+        }
+
+        tbody tr:hover {
+            background: var(--bg-row-hover);
+            box-shadow: inset 3px 0 0 var(--accent-red);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody td {
+            padding: 0.85rem 1.1rem;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        tbody td:first-child {
+            text-align: center;
+            padding: 0.6rem 1.1rem;
+        }
+
+        tbody td img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-subtle);
+            display: block;
+            margin: 0 auto;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        tbody tr:hover td img {
+            border-color: var(--accent-red);
+            transform: scale(1.08);
+        }
+
+        td:nth-child(2) {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        td:nth-child(3) {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        td:nth-child(5) {
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+        }
+
+        .rank-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .rank-genin    { background: rgba(79, 168, 79, 0.15);  color: var(--rank-genin);  border: 1px solid rgba(79, 168, 79, 0.3); }
+        .rank-chunin   { background: rgba(74, 144, 217, 0.15); color: var(--rank-chunin); border: 1px solid rgba(74, 144, 217, 0.3); }
+        .rank-jonin    { background: rgba(155, 89, 182, 0.15); color: var(--rank-jonin);  border: 1px solid rgba(155, 89, 182, 0.3); }
+        .rank-anbu     { background: rgba(224, 82, 82, 0.15);  color: var(--rank-anbu);   border: 1px solid rgba(224, 82, 82, 0.3); }
+        .rank-kage     { background: rgba(201, 146, 42, 0.15); color: var(--rank-kage);   border: 1px solid rgba(201, 146, 42, 0.3); }
+
+        .missao-info {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .missao-info strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .missao-vazia {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-group a {
+            display: inline-block;
+            padding: 5px 11px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        a.btn-ver {
+            background: rgba(74, 144, 217, 0.1);
+            color: #4a90d9;
+            border: 1px solid rgba(74, 144, 217, 0.25);
+        }
+
+        a.btn-ver:hover {
+            background: rgba(74, 144, 217, 0.2);
+            border-color: rgba(74, 144, 217, 0.5);
+        }
+
+        a.btn-editar {
+            background: rgba(201, 146, 42, 0.1);
+            color: var(--accent-gold);
+            border: 1px solid rgba(201, 146, 42, 0.25);
+        }
+
+        a.btn-editar:hover {
+            background: rgba(201, 146, 42, 0.2);
+            border-color: rgba(201, 146, 42, 0.5);
+        }
+
+        a.btn-deletar {
+            background: rgba(224, 82, 82, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(224, 82, 82, 0.25);
+        }
+
+        a.btn-deletar:hover {
+            background: rgba(224, 82, 82, 0.2);
+            border-color: rgba(224, 82, 82, 0.5);
+        }
+
+        @media (max-width: 900px) {
+            body { padding: 1.5rem 1rem; }
+            h1 { font-size: 1.5rem; }
+            .table-wrapper { overflow-x: auto; }
+            table { min-width: 860px; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Lista de Ninjas</h1>
+
+<div class="btn-group">
+    <a class="btn-ver" th:href="@{/ninjas/ui/adicionar}">Adicionar Ninja</a>
+</div>
+
+<div class="table-wrapper">
+    <table>
+        <colgroup>
+            <col><col><col><col><col><col><col><col>
+        </colgroup>
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Imagem</th>
+            <th>Nome</th>
+            <th>Idade</th>
+            <th>Email</th>
+            <th>Rank</th>
+            <th>Missões</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="ninja: ${ninjas}">
+            <td th:text="${ninja.id}"></td>
+            <td>
+                <img th:src="${ninja.imgUrl}" alt="Foto do ninja">
+            </td>
+            <td th:text="${ninja.nome}"></td>
+            <td th:text="${ninja.idade}"></td>
+            <td th:text="${ninja.email}"></td>
+            <td>
+                <!--
+                    Para colorir o badge por rank, adicione th:classappend no <span>.
+                    Exemplo: th:classappend="${ninja.rank == 'Genin'} ? 'rank-genin' : (${ninja.rank == 'Chunin'} ? 'rank-chunin' : 'rank-jonin')"
+                -->
+                <span class="rank-badge" th:text="${ninja.rank}"></span>
+            </td>
+            <td>
+                <span class="missao-info" th:if="${ninja.missoes != null}">
+                    <strong th:text="${ninja.missoes.nome}"></strong>
+                    &mdash; Dif:
+                    <span th:text="${ninja.missoes.dificuldade}"></span>
+                </span>
+                <span class="missao-vazia" th:if="${ninja.missoes == null}">Sem missões</span>
+            </td>
+            <td>
+                <div class="btn-group">
+                    <a class="btn-ver" th:href="@{/ninjas/ui/listar/{id}(id=${ninja.id})}">Ver detalhes</a>
+                    <a class="btn-editar" th:href="@{/ninjas/ui/#/{id}(id=${ninja.id})}">Alterar</a>
+                    <a class="btn-deletar" th:href="@{/ninjas/ui/deletar/{id}(id=${ninja.id})}">Deletar</a>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
